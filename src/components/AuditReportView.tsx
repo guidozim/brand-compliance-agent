@@ -6,6 +6,7 @@ import {
   AuditCategory,
   DeviationSeverity,
 } from '@/types/audit';
+import { getPagePreviewUrl } from '@/lib/pagePreviews';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -25,6 +26,8 @@ import {
   MapPin,
   Target,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 interface AuditReportViewProps {
@@ -91,6 +94,15 @@ export function AuditReportView({
   const criticalCount = report.deviations.filter((d) => d.severity === 'CRITICAL').length;
   const warningCount = report.deviations.filter((d) => d.severity === 'WARNING').length;
   const passCount = report.deviations.filter((d) => d.severity === 'PASS').length;
+
+  // Determina a página ativa para exibição visual (se estiver em 'ALL', exibe a página 1 / capa por padrão)
+  const activePageNumber = selectedPage === 'ALL' ? 1 : selectedPage;
+
+  // Busca se há um preview customizado em report.pagePreviews
+  const pagePreviewItem = report.pagePreviews?.find((p) => p.pageNumber === activePageNumber);
+  const currentPreviewImage =
+    pagePreviewItem?.previewUrl ||
+    getPagePreviewUrl(activePageNumber, report.previewUrl, report.brandName);
 
   const handleCopySummary = () => {
     const text = `AUDITORIA DE BRAND COMPLIANCE — ${report.brandName.toUpperCase()}
@@ -367,44 +379,80 @@ ${report.deviations
               <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5 text-rose-600" />
                 <span>Mapeamento de Desvios</span>
-                {report.deviations.some((d) => d.boundingBox) && (
-                  <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700">
-                    {report.deviations.filter((d) => d.boundingBox).length} zonas sinalizadas
+                {report.totalPages && report.totalPages > 1 && (
+                  <span className="rounded bg-brand-100 px-1.5 py-0.5 text-[10px] font-bold text-brand-800">
+                    Pág. {activePageNumber} {selectedPage === 'ALL' ? '(Capa)' : ''}
                   </span>
                 )}
               </span>
 
-              {report.deviations.some((d) => d.boundingBox) && (
-                <button
-                  type="button"
-                  onClick={() => setShowHotspots(!showHotspots)}
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded border transition ${
-                    showHotspots
-                      ? 'bg-rose-50 border-rose-300 text-rose-700'
-                      : 'bg-white border-slate-300 text-slate-600'
-                  }`}
-                >
-                  {showHotspots ? '✓ Ocultar Pins' : 'Mostrar Pins'}
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {report.deviations.some((d) => d.boundingBox) && (
+                  <button
+                    type="button"
+                    onClick={() => setShowHotspots(!showHotspots)}
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded border transition ${
+                      showHotspots
+                        ? 'bg-rose-50 border-rose-300 text-rose-700'
+                        : 'bg-white border-slate-300 text-slate-600'
+                    }`}
+                  >
+                    {showHotspots ? '✓ Ocultar Pins' : 'Mostrar Pins'}
+                  </button>
+                )}
+              </div>
             </div>
 
+            {/* Navegador Rápido de Miniaturas (quando multi-página) */}
+            {report.totalPages && report.totalPages > 1 && (
+              <div className="mb-2 flex items-center justify-between rounded-lg bg-slate-200/80 px-2 py-1 text-xs">
+                <button
+                  type="button"
+                  disabled={activePageNumber <= 1}
+                  onClick={() => setSelectedPage(Math.max(1, activePageNumber - 1))}
+                  className="inline-flex items-center gap-1 rounded bg-white px-2 py-0.5 text-[11px] font-bold text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                  <span>Anterior</span>
+                </button>
+
+                <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800">
+                  <span>Página {activePageNumber} de {report.totalPages}</span>
+                  {pagePreviewItem?.title && (
+                    <span className="hidden sm:inline font-normal text-slate-500">
+                      • {pagePreviewItem.title}
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={activePageNumber >= report.totalPages}
+                  onClick={() => setSelectedPage(Math.min(report.totalPages || 4, activePageNumber + 1))}
+                  className="inline-flex items-center gap-1 rounded bg-white px-2 py-0.5 text-[11px] font-bold text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span>Próxima</span>
+                  <ChevronRight className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+
             <div className="relative overflow-hidden rounded-xl border border-slate-300 bg-slate-900/90 shadow-sm flex items-center justify-center min-h-[220px]">
-              {report.previewUrl ? (
+              {currentPreviewImage ? (
                 <div className="relative inline-block max-w-full">
                   <img
-                    src={report.previewUrl}
-                    alt="Peça auditada"
-                    className="max-h-72 w-full object-contain block"
+                    src={currentPreviewImage}
+                    alt={`Peça auditada - Página ${activePageNumber}`}
+                    className="max-h-72 w-full object-contain block transition-all duration-300"
                   />
 
-                  {/* Overlays / Caixas de destaque com Pins Numerados */}
+                  {/* Overlays / Caixas de destaque com Pins Numerados sincronizados com a página exibida */}
                   {showHotspots &&
                     report.deviations
                       .filter(
                         (d) =>
                           d.boundingBox &&
-                          (selectedPage === 'ALL' || d.pageNumber === selectedPage)
+                          (d.pageNumber ? d.pageNumber === activePageNumber : activePageNumber === 1)
                       )
                       .map((d, index) => {
                         const isActive = activeHotspotId === d.id;
@@ -689,6 +737,9 @@ ${report.deviations
                       <button
                         type="button"
                         onClick={() => {
+                          if (item.pageNumber && selectedPage !== item.pageNumber) {
+                            setSelectedPage(item.pageNumber);
+                          }
                           setActiveHotspotId(isHotspotActive ? null : item.id);
                           window.scrollTo({ top: 220, behavior: 'smooth' });
                         }}
