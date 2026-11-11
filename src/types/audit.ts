@@ -60,6 +60,7 @@ export interface AuditReport {
   detectedColors?: DetectedColor[];
   detectedTypography?: string[];
   contextNote?: string;
+  isSimulation?: boolean; // Verdadeiro quando gerado pelo motor de fallback por ausência de chave de IA
 }
 
 export interface AuditRequestPayload {
@@ -71,5 +72,6 @@ export interface AuditRequestPayload {
   contextNote?: string;
   apiKey?: string;
   provider?: 'gemini' | 'openai' | 'auto';
+  pageImages?: { pageNumber: number; dataUrl: string }[];
 }
 

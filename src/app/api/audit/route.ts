@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
       contextNote,
       apiKey,
       provider = 'auto',
+      pageImages,
     } = payload;
 
     if (!image) {
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
         };
       } catch (err: unknown) {
         console.warn('Falha no processamento com OpenAI Vision, acionando fallback inteligente:', err);
-        report = generateSmartAuditReport(fileName || 'arte-criativa.png', brand, contextNote);
+        report = generateSmartAuditReport(fileName || 'arte-criativa.png', brand, contextNote, pageImages);
         report.previewUrl = image;
       }
     }
@@ -84,13 +85,13 @@ export async function POST(req: NextRequest) {
         };
       } catch (err: unknown) {
         console.warn('Falha no processamento com Gemini Vision, acionando fallback inteligente:', err);
-        report = generateSmartAuditReport(fileName || 'arte-criativa.png', brand, contextNote);
+        report = generateSmartAuditReport(fileName || 'arte-criativa.png', brand, contextNote, pageImages);
         report.previewUrl = image;
       }
     }
     // Tentativa 3: Motor Inteligente Embutido (Pronto para Uso Imediato)
     else {
-      report = generateSmartAuditReport(fileName || 'arte-criativa.png', brand, contextNote);
+      report = generateSmartAuditReport(fileName || 'arte-criativa.png', brand, contextNote, pageImages);
       report.previewUrl = image;
     }
 

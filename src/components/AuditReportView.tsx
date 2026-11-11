@@ -302,7 +302,20 @@ ${report.deviations
             <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/70 p-3 text-xs text-blue-950 flex items-start gap-2.5 print:hidden">
               <Info className="h-4 w-4 shrink-0 text-brand-700 mt-0.5" />
               <div>
-                <span className="font-bold">Brochura Editorial em PDF ({report.fileName}):</span> Documentos editoriais fechados contêm camadas vetoriais e fontes de pré-impressão gráfica (Adobe InDesign). O agente fornece o <strong>Laudo Técnico de Auditoria (PDF)</strong> com o checklist de intervenções para o diagramador ajustar no InDesign, e o <strong>Render Corrigido (.png)</strong> como referência visual da identidade correta.
+                <span className="font-bold">Documento em PDF ({report.fileName}):</span>{' '}
+                {report.totalPages && report.totalPages > 1
+                  ? `Documento multi-páginas (${report.totalPages} lâminas/páginas). O agente sincroniza a navegação visual para cada lâmina e gera o checklist de intervenções com render corrigido.`
+                  : 'Documento editorial vetorial fechado.'}
+              </div>
+            </div>
+          )}
+
+          {report.isSimulation && (
+            <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50/80 p-3 text-xs text-amber-950 flex items-start gap-2.5 print:hidden">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-700 mt-0.5" />
+              <div>
+                <span className="font-bold">Modo Simulação Inteligente (Sem Chave de IA Externa):</span>{' '}
+                Esta auditoria utilizou o motor de heurística embutido. Para que o agente leia os textos específicos e examine cada pixel inédito com <strong>GPT-4o Vision</strong> ou <strong>Google Gemini Vision</strong>, insira sua chave no ícone de engrenagem ⚙️ (Configurações de IA) no topo.
               </div>
             </div>
           )}

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { formatFileSize } from '@/lib/utils';
 import { BrandGuide } from '@/types/brand';
+import { extractPagesFromPdf, ExtractedPdfPage } from '@/lib/pdfRenderer';
 
 interface UploadSectionProps {
   currentBrand: BrandGuide;
@@ -24,6 +25,7 @@ interface UploadSectionProps {
     fileType: string;
     fileSize: number;
     contextNote: string;
+    pageImages?: { pageNumber: number; dataUrl: string }[];
   }) => void;
   isAuditing: boolean;
 }
@@ -34,6 +36,8 @@ export function UploadSection({
   isAuditing,
 }: UploadSectionProps) {
   const [dragActive, setDragActive] = useState(false);
+  const [extractedPages, setExtractedPages] = useState<ExtractedPdfPage[]>([]);
+  const [isProcessingPdf, setIsProcessingPdf] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{
     file: File | null;
     preview: string;
@@ -55,25 +59,60 @@ export function UploadSection({
     }
   };
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
-    if (!validTypes.includes(file.type)) {
+    if (!validTypes.includes(file.type) && !isPdf) {
       alert('Por favor, envie um arquivo de imagem (.png, .jpg) ou documento (.pdf).');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target?.result as string;
-      setSelectedFile({
-        file,
-        preview: base64,
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      });
-    };
-    reader.readAsDataURL(file);
+    if (isPdf) {
+      setIsProcessingPdf(true);
+      try {
+        const pages = await extractPagesFromPdf(file);
+        setExtractedPages(pages);
+        const coverImage = pages[0]?.dataUrl || '';
+
+        setSelectedFile({
+          file,
+          preview: coverImage,
+          name: file.name,
+          type: 'application/pdf',
+          size: file.size,
+        });
+      } catch (err) {
+        console.error('Falha ao renderizar PDF:', err);
+        // Fallback básico
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setSelectedFile({
+            file,
+            preview: e.target?.result as string,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+          });
+        };
+        reader.readAsDataURL(file);
+      } finally {
+        setIsProcessingPdf(false);
+      }
+    } else {
+      setExtractedPages([]);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        setSelectedFile({
+          file,
+          preview: base64,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -115,6 +154,10 @@ export function UploadSection({
       fileType: selectedFile.type,
       fileSize: selectedFile.size,
       contextNote,
+      pageImages: extractedPages.map((p) => ({
+        pageNumber: p.pageNumber,
+        dataUrl: p.dataUrl,
+      })),
     });
 
     return () => {

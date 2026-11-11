@@ -93,6 +93,7 @@ export default function Home() {
     fileType: string;
     fileSize: number;
     contextNote: string;
+    pageImages?: { pageNumber: number; dataUrl: string }[];
   }) => {
     setIsAuditing(true);
     try {
@@ -108,6 +109,7 @@ export default function Home() {
           contextNote: fileData.contextNote,
           apiKey,
           provider,
+          pageImages: fileData.pageImages,
         }),
       });
 
