@@ -711,6 +711,17 @@ ${report.deviations
               const ItemIcon = severityDetails.icon;
               const isHotspotActive = activeHotspotId === item.id;
 
+              // Calcula o número do Pin correspondente na imagem para este desvio
+              const pageItemsWithBox = report.deviations.filter(
+                (d) =>
+                  d.boundingBox &&
+                  (d.pageNumber
+                    ? d.pageNumber === (item.pageNumber || activePageNumber)
+                    : activePageNumber === 1)
+              );
+              const pinIndex = pageItemsWithBox.findIndex((d) => d.id === item.id);
+              const pinNumber = pinIndex !== -1 ? pinIndex + 1 : null;
+
               return (
                 <div
                   key={item.id}
@@ -728,6 +739,20 @@ ${report.deviations
                       <ItemIcon className={`h-5 w-5 shrink-0 mt-0.5 ${severityDetails.color}`} />
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
+                          {pinNumber !== null && (
+                            <span
+                              className={`inline-flex items-center justify-center rounded-md px-2 py-0.5 text-[11px] font-black text-white shadow-2xs ${
+                                item.severity === 'CRITICAL'
+                                  ? 'bg-rose-600 ring-1 ring-rose-700'
+                                  : item.severity === 'WARNING'
+                                  ? 'bg-amber-600 ring-1 ring-amber-700'
+                                  : 'bg-emerald-600 ring-1 ring-emerald-700'
+                              }`}
+                              title={`Corresponde ao Pin #${pinNumber} sinalizado na imagem acima`}
+                            >
+                              Pin #{pinNumber}
+                            </span>
+                          )}
                           <span
                             className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${severityDetails.badge} border`}
                           >
