@@ -92,8 +92,10 @@ export async function extractPagesFromPdf(
 
     for (let pageNum = 1; pageNum <= total; pageNum++) {
       const page = await pdf.getPage(pageNum);
-      // Escala 1.5 para boa nitidez sem estourar memória
-      const viewport = page.getViewport({ scale: 1.5 });
+      // Escala balanceada para nitidez e leveza (máx 1200px de largura)
+      const rawViewport = page.getViewport({ scale: 1.0 });
+      const targetScale = Math.min(1200 / rawViewport.width, 1.3);
+      const viewport = page.getViewport({ scale: Math.max(0.8, targetScale) });
 
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
@@ -101,6 +103,10 @@ export async function extractPagesFromPdf(
       const ctx = canvas.getContext('2d');
 
       if (ctx) {
+        // Fundo branco para garantir que PDFs transparentes não fiquem pretos em JPEG
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
         await page.render({
           canvasContext: ctx,
           viewport,
@@ -108,7 +114,7 @@ export async function extractPagesFromPdf(
 
         pages.push({
           pageNumber: pageNum,
-          dataUrl: canvas.toDataURL('image/png'),
+          dataUrl: canvas.toDataURL('image/jpeg', 0.82),
           width: viewport.width,
           height: viewport.height,
         });

@@ -134,7 +134,13 @@ export async function auditWithOpenAI(
   }
 
   const data = await response.json();
-  const content = data.choices[0]?.message?.content;
+  let content = data.choices[0]?.message?.content || '{}';
+  content = content.trim();
+  if (content.startsWith('```json')) {
+    content = content.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+  } else if (content.startsWith('```')) {
+    content = content.replace(/^```\s*/, '').replace(/```\s*$/, '');
+  }
   return JSON.parse(content);
 }
 
@@ -144,16 +150,17 @@ export async function auditWithGemini(
   contextNote?: string,
   apiKey?: string
 ): Promise<AuditReport> {
-  const token = apiKey || process.env.GEMINI_API_KEY;
+  const token = (apiKey || process.env.GEMINI_API_KEY || '').trim();
   if (!token) {
     throw new Error('Chave da API do Google Gemini não configurada.');
   }
 
   const prompt = buildSystemPrompt(brand, contextNote);
   const rawBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
-  const mimeType = imageBase64.startsWith('data:')
-    ? imageBase64.split(';')[0].replace('data:', '')
-    : 'image/jpeg';
+  let mimeType = 'image/jpeg';
+  if (imageBase64.startsWith('data:')) {
+    mimeType = imageBase64.split(';')[0].replace('data:', '');
+  }
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${token}`;
 
@@ -176,18 +183,31 @@ export async function auditWithGemini(
       ],
       generationConfig: {
         response_mime_type: 'application/json',
-        temperature: 0.2,
+        temperature: 0.1,
       },
     }),
   });
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(`Erro na API Gemini: ${err?.error?.message || response.statusText}`);
+    const message = err?.error?.message || response.statusText;
+    throw new Error(`Google API (${response.status}): ${message}`);
   }
 
   const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    throw new Error('Gemini não retornou nenhum texto de resposta.');
+  }
+
+  // Sanitiza qualquer bloco markdown que o Gemini possa ter colocado ao redor
+  text = text.trim();
+  if (text.startsWith('```json')) {
+    text = text.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+  } else if (text.startsWith('```')) {
+    text = text.replace(/^```\s*/, '').replace(/```\s*$/, '');
+  }
+
   return JSON.parse(text);
 }
 
