@@ -571,12 +571,4 @@ export function generateSmartAuditReport(
     isSimulation: true,
   };
 }
-    deviations,
-    detectedColors,
-    detectedTypography: isAndritz
-      ? ['Aptos Bold (Títulos)', 'Condensada Não-Oficial (Subtítulo)', 'Arial Regular (Corpo)']
-      : ['Inter SemiBold', 'Inter Regular'],
-    contextNote,
-  };
-}
 

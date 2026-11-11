@@ -6,17 +6,12 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-declare global {
-  interface Window {
-    pdfjsLib?: any;
-  }
-}
-
 let pdfjsLoadingPromise: Promise<any> | null = null;
 
 export async function loadPdfJs(): Promise<any> {
   if (typeof window === 'undefined') return null;
-  if (window.pdfjsLib) return window.pdfjsLib;
+  const win = window as any;
+  if (win.pdfjsLib) return win.pdfjsLib;
 
   if (pdfjsLoadingPromise) return pdfjsLoadingPromise;
 
@@ -24,7 +19,7 @@ export async function loadPdfJs(): Promise<any> {
     // Verifica se já existe a tag de script
     const existing = document.querySelector('script[data-pdfjs]');
     if (existing) {
-      existing.addEventListener('load', () => resolve(window.pdfjsLib));
+      existing.addEventListener('load', () => resolve((window as any).pdfjsLib));
       return;
     }
 
@@ -34,7 +29,7 @@ export async function loadPdfJs(): Promise<any> {
     script.async = true;
 
     script.onload = () => {
-      const pdfjs = window.pdfjsLib;
+      const pdfjs = (window as any).pdfjsLib;
       if (pdfjs) {
         pdfjs.GlobalWorkerOptions.workerSrc =
           'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
