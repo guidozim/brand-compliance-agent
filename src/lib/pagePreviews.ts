@@ -36,11 +36,14 @@ export function getPagePreviewUrl(
 }
 
 function svgToDataUrl(svgString: string): string {
-  if (typeof window !== 'undefined') {
+  try {
+    if (typeof window !== 'undefined') {
+      return `data:image/svg+xml;base64,${window.btoa(unescape(encodeURIComponent(svgString)))}`;
+    }
+    return `data:image/svg+xml;base64,${Buffer.from(svgString, 'utf-8').toString('base64')}`;
+  } catch (e) {
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
   }
-  // Fallback para SSR
-  return `data:image/svg+xml;base64,${Buffer.from(svgString).toString('base64')}`;
 }
 
 function generateCoverSvg(originalUploadUrl?: string, brandName = 'ANDRITZ'): string {

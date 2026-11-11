@@ -441,6 +441,7 @@ ${report.deviations
               {currentPreviewImage ? (
                 <div className="relative inline-block max-w-full">
                   <img
+                    key={`preview-page-${activePageNumber}`}
                     src={currentPreviewImage}
                     alt={`Peça auditada - Página ${activePageNumber}`}
                     className="max-h-72 w-full object-contain block transition-all duration-300"
