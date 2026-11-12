@@ -162,53 +162,73 @@ export async function auditWithGemini(
     mimeType = imageBase64.split(';')[0].replace('data:', '');
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${token}`;
+  const candidateModels = [
+    'gemini-2.0-flash',
+    'gemini-1.5-flash-latest',
+    'gemini-2.5-flash',
+    'gemini-1.5-flash',
+  ];
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            { text: prompt },
+  let lastError: Error | null = null;
+
+  for (const model of candidateModels) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${token}`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
             {
-              inline_data: {
-                mime_type: mimeType,
-                data: rawBase64,
-              },
+              parts: [
+                { text: prompt },
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: rawBase64,
+                  },
+                },
+              ],
             },
           ],
-        },
-      ],
-      generationConfig: {
-        response_mime_type: 'application/json',
-        temperature: 0.1,
-      },
-    }),
-  });
+          generationConfig: {
+            response_mime_type: 'application/json',
+            temperature: 0.1,
+          },
+        }),
+      });
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    const message = err?.error?.message || response.statusText;
-    throw new Error(`Google API (${response.status}): ${message}`);
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        const message = err?.error?.message || response.statusText;
+        throw new Error(`Google API (${response.status}): ${message}`);
+      }
+
+      const data = await response.json();
+      let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error('Gemini não retornou nenhum texto de resposta.');
+      }
+
+      text = text.trim();
+      if (text.startsWith('```json')) {
+        text = text.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+      } else if (text.startsWith('```')) {
+        text = text.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      }
+
+      return JSON.parse(text);
+    } catch (err: any) {
+      lastError = err;
+      if (err.message && err.message.includes('404')) {
+        continue;
+      }
+      throw err;
+    }
   }
 
-  const data = await response.json();
-  let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new Error('Gemini não retornou nenhum texto de resposta.');
-  }
-
-  // Sanitiza qualquer bloco markdown que o Gemini possa ter colocado ao redor
-  text = text.trim();
-  if (text.startsWith('```json')) {
-    text = text.replace(/^```json\s*/, '').replace(/```\s*$/, '');
-  } else if (text.startsWith('```')) {
-    text = text.replace(/^```\s*/, '').replace(/```\s*$/, '');
-  }
-
-  return JSON.parse(text);
+  throw lastError || new Error('Falha ao conectar com o modelo Gemini.');
 }
 
 /**
