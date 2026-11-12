@@ -55,7 +55,7 @@ export const ANDRITZ_BRAND_GUIDE: BrandGuide = {
   typography: {
     primaryFont: 'Aptos / Helvetica Neue / Arial',
     secondaryFont: 'Arial / Segoe UI (para documentação técnica e body text)',
-    hierarchyRules: 'Headings com peso Bold/Semibold em ANDRITZ Blue ou Deep Navy. Subtítulos em Slate Grey. Parágrafos em Regular com leading confortável (140-150%). Proibido sublinhar títulos.',
+    hierarchyRules: 'Headings com peso Bold ou Semibold em Aptos / Helvetica / Arial. É 100% PERMITIDO e recomendado o uso de títulos em Branco (#FFFFFF) sobre fundos em ANDRITZ Blue (#005A9C), Deep Navy (#002B49) ou fotos industriais escuras de capa. Em fundos claros, títulos utilizam ANDRITZ Blue (#005A9C) ou Deep Navy (#002B49). Subtítulos em Slate Grey (#333F48). Manter espaçamento entre-linhas (leading) proporcional (130% a 150%) e entre-letras (kerning/tracking) padrão de fábrica sem expansão ou compressão exagerada. Proibido sublinhar títulos.',
     forbiddenFonts: [
       'Comic Sans',
       'Papyrus',

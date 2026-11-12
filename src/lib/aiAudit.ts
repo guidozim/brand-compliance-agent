@@ -52,7 +52,10 @@ ${contextNote ? `\nCONTEXTO ESPECÍFICO DESTA PEÇA FORNECIDO PELO OPERADOR: "${
 ### SUAS INSTRUÇÕES DE ANÁLISE:
 1. Examine meticulosamente todas as páginas enviadas:
    a) Uso do Logotipo: Está distorcido? Respeita a área de respiro mínima (clear space)? O fundo tem contraste suficiente? A cor do logo é oficial?
-   b) Tipografia: A fonte utilizada parece corresponder à família oficial (${brand.typography.primaryFont})? A hierarquia visual está respeitada? Há tipografia não autorizada?
+   b) Tipografia, Espaçamento & Hierarquia:
+      - A família tipográfica bate com a oficial (${brand.typography.primaryFont})?
+      - Espaçamento entre-letras (kerning/tracking) e entre-linhas (leading): Verifique se o entre-linhas está equilibrado (sem sobreposição e sem linhas muito distantes) e se o rastreamento entre-letras está natural.
+      - 🚨 REGRA CRÍTICA DE CORES DE TÍTULOS: Títulos em BRANCO (#FFFFFF) aplicados sobre fundos escuros (fundo ANDRITZ Blue #005A9C, Deep Navy #002B49 ou fotografias industriais de capa) são 100% CORRETOS, HOMOLOGADOS e PERMITIDOS. JAMAIS marque como erro ou ressalva o uso de texto branco sobre fundo escuro/azul se houver bom contraste.
    c) Paleta de Cores: Os tons predominantes batem com os códigos HEX oficiais? Há cores estranhas ou vibrantes fora da identidade industrial?
    d) Alinhamento & Composição: A arte tem acabamento corporativo limpo? Imagens industriais têm clareza técnica?
    e) Redação & Tom de Voz: O nome da marca foi escrito corretamente (ex: ANDRITZ sempre em caixa alta)? Há slogans incorretos?

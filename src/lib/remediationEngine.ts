@@ -44,45 +44,13 @@ export async function generateCorrectedCreative(
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
 
-        // 1. Desenha a arte original exata do usuário como camada base
+        // 1. Desenha a arte original exata do usuário mantendo integridade total de layout
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // 2. Barra sutil de Arquitetura Institucional no topo (ANDRITZ Blue)
-        const barH = Math.max(6, Math.round(canvas.height * 0.01));
+        // 2. Linha sutil de acento da arquitetura de marca no topo (ANDRITZ Blue)
+        const barH = Math.max(3, Math.round(canvas.height * 0.005));
         ctx.fillStyle = primaryColor;
         ctx.fillRect(0, 0, canvas.width, barH);
-
-        // 3. Selo / Assinatura de Conformidade Institucional no rodapé
-        // Garante a presença do slogan obrigatório "ENGINEERED SUCCESS" e chancela oficial
-        const badgeW = Math.min(Math.round(canvas.width * 0.38), 380);
-        const badgeH = Math.max(28, Math.round(canvas.height * 0.065));
-        const badgeX = canvas.width - badgeW - 20;
-        const badgeY = canvas.height - badgeH - 16;
-
-        // Fundo do selo com contraste seguro
-        ctx.fillStyle = 'rgba(0, 43, 73, 0.92)'; // Deep Navy corporativo
-        ctx.strokeStyle = accentCyan; // Acento em Industrial Cyan
-        ctx.lineWidth = 1.5;
-
-        ctx.beginPath();
-        if (typeof (ctx as any).roundRect === 'function') {
-          (ctx as any).roundRect(badgeX, badgeY, badgeW, badgeH, 6);
-        } else {
-          ctx.rect(badgeX, badgeY, badgeW, badgeH);
-        }
-        ctx.fill();
-        ctx.stroke();
-
-        // Texto do selo com o nome da marca e slogan
-        ctx.fillStyle = '#FFFFFF';
-        const fontSize = Math.max(10, Math.round(badgeH * 0.34));
-        ctx.font = `bold ${fontSize}px Arial, Helvetica, sans-serif`;
-        ctx.textBaseline = 'middle';
-        ctx.fillText(
-          `✓ ${brand.name.toUpperCase()} • ${brand.tagline || 'ENGINEERED SUCCESS'}`,
-          badgeX + 14,
-          badgeY + badgeH / 2
-        );
       } else {
         // Fallback gráfico se não houver imagem válida carregada
         canvas.width = 1200;
