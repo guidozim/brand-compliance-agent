@@ -2,7 +2,7 @@ import { BrandGuide } from '@/types/brand';
 import { AuditDeviation, AuditReport, AuditStatus, DetectedColor } from '@/types/audit';
 import { generateId } from './utils';
 
-export function buildSystemPrompt(brand: BrandGuide, contextNote?: string): string {
+export function buildSystemPrompt(brand: BrandGuide, contextNote?: string, totalPagesCount?: number): string {
   const primaryColors = brand.colors
     .filter((c) => c.type === 'primary')
     .map((c) => `${c.name}: ${c.hex} (${c.usage})`)
@@ -13,8 +13,12 @@ export function buildSystemPrompt(brand: BrandGuide, contextNote?: string): stri
     .map((c) => `${c.name}: ${c.hex} (${c.usage})`)
     .join(', ');
 
+  const totalPagesText = totalPagesCount && totalPagesCount > 1
+    ? `\n⚠️ ATENÇÃO: Este material possui ${totalPagesCount} PÁGINAS / LÂMINAS separadas enviadas em anexo. Você deve examinar CADA UMA DAS PÁGINAS minuciosamente e registrar no relatório de desvios ('deviations') os apontamentos de TODAS as páginas, preenchendo obrigatoriamente o campo 'pageNumber' correto (1 para Página 1, 2 para Página 2, etc).`
+    : '';
+
   return `Você é o "Chief Brand Governance Officer & Diretor de Arte Sênior" especializado na auditoria de conformidade de marcas industriais globais de alta precisão (como a ${brand.name}).
-Sua missão é realizar uma auditoria cirúrgica, implacável e construtiva da peça criativa enviada em anexo, confrontando cada pixel e elemento textual contra o Brand Guide Oficial da marca.
+Sua missão é realizar uma auditoria cirúrgica, implacável e construtiva da peça criativa enviada em anexo, confrontando cada pixel e elemento textual contra o Brand Guide Oficial da marca.${totalPagesText}
 
 ---
 ### DIRETRIZES OFICIAIS DO BRAND GUIDE DE: ${brand.name.toUpperCase()}
@@ -46,7 +50,7 @@ ${contextNote ? `\nCONTEXTO ESPECÍFICO DESTA PEÇA FORNECIDO PELO OPERADOR: "${
 
 ---
 ### SUAS INSTRUÇÕES DE ANÁLISE:
-1. Examine meticulosamente:
+1. Examine meticulosamente todas as páginas enviadas:
    a) Uso do Logotipo: Está distorcido? Respeita a área de respiro mínima (clear space)? O fundo tem contraste suficiente? A cor do logo é oficial?
    b) Tipografia: A fonte utilizada parece corresponder à família oficial (${brand.typography.primaryFont})? A hierarquia visual está respeitada? Há tipografia não autorizada?
    c) Paleta de Cores: Os tons predominantes batem com os códigos HEX oficiais? Há cores estranhas ou vibrantes fora da identidade industrial?
@@ -57,7 +61,7 @@ ${contextNote ? `\nCONTEXTO ESPECÍFICO DESTA PEÇA FORNECIDO PELO OPERADOR: "${
 {
   "status": "APPROVED" | "APPROVED_WITH_RESERVATIONS" | "REJECTED",
   "score": number (0 a 100),
-  "summary": "Resumo executivo de 2 a 3 frases avaliando o nível geral de conformidade da peça.",
+  "summary": "Resumo executivo de 2 a 3 frases avaliando o nível geral de conformidade da peça em todas as páginas.",
   "detectedColors": [
     { "hex": "#005A9C", "name": "ANDRITZ Blue", "matchesBrand": true, "percentage": 35 }
   ],
@@ -78,24 +82,46 @@ ${contextNote ? `\nCONTEXTO ESPECÍFICO DESTA PEÇA FORNECIDO PELO OPERADOR: "${
     }
   ]
 }
-Nota: Forneça pelo menos 4 a 6 itens no array "deviations" cobrindo cada uma das categorias principais (mesmo itens que passaram como 'PASS' ou alertas 'WARNING' e falhas 'CRITICAL') com suas respectivas coordenadas boundingBox (x, y, width, height em porcentagem de 0 a 100) e indicação de página para que o sistema aponte visualmente onde estão os erros.`;
+Nota: Forneça pelo menos 4 a 8 itens no array "deviations" distribuídos entre as páginas analisadas, identificando a página exata no atributo pageNumber.`;
 }
 
 export async function auditWithOpenAI(
   imageBase64: string,
   brand: BrandGuide,
   contextNote?: string,
-  apiKey?: string
+  apiKey?: string,
+  pageImages?: { pageNumber: number; dataUrl: string }[]
 ): Promise<AuditReport> {
   const token = apiKey || process.env.OPENAI_API_KEY;
   if (!token) {
     throw new Error('Chave da API da OpenAI não configurada.');
   }
 
-  const prompt = buildSystemPrompt(brand, contextNote);
-  const dataUrl = imageBase64.startsWith('data:')
-    ? imageBase64
-    : `data:image/jpeg;base64,${imageBase64}`;
+  const totalPages = pageImages && pageImages.length > 0 ? pageImages.length : 1;
+  const prompt = buildSystemPrompt(brand, contextNote, totalPages);
+
+  const userContent: any[] = [{ type: 'text', text: prompt }];
+
+  if (pageImages && pageImages.length > 0) {
+    for (const page of pageImages) {
+      const url = page.dataUrl.startsWith('data:')
+        ? page.dataUrl
+        : `data:image/jpeg;base64,${page.dataUrl}`;
+      userContent.push({ type: 'text', text: `[--- PÁGINA / LÂMINA ${page.pageNumber} ---]` });
+      userContent.push({
+        type: 'image_url',
+        image_url: { url, detail: 'high' },
+      });
+    }
+  } else {
+    const dataUrl = imageBase64.startsWith('data:')
+      ? imageBase64
+      : `data:image/jpeg;base64,${imageBase64}`;
+    userContent.push({
+      type: 'image_url',
+      image_url: { url: dataUrl, detail: 'high' },
+    });
+  }
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -112,13 +138,7 @@ export async function auditWithOpenAI(
         },
         {
           role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            {
-              type: 'image_url',
-              image_url: { url: dataUrl, detail: 'high' },
-            },
-          ],
+          content: userContent,
         },
       ],
       temperature: 0.2,
@@ -148,18 +168,47 @@ export async function auditWithGemini(
   imageBase64: string,
   brand: BrandGuide,
   contextNote?: string,
-  apiKey?: string
+  apiKey?: string,
+  pageImages?: { pageNumber: number; dataUrl: string }[]
 ): Promise<AuditReport> {
   const token = (apiKey || process.env.GEMINI_API_KEY || '').trim();
   if (!token) {
     throw new Error('Chave da API do Google Gemini não configurada.');
   }
 
-  const prompt = buildSystemPrompt(brand, contextNote);
-  const rawBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
-  let mimeType = 'image/jpeg';
-  if (imageBase64.startsWith('data:')) {
-    mimeType = imageBase64.split(';')[0].replace('data:', '');
+  const totalPages = pageImages && pageImages.length > 0 ? pageImages.length : 1;
+  const prompt = buildSystemPrompt(brand, contextNote, totalPages);
+
+  // Monta as partes de conteúdo enviando todas as páginas quando disponíveis
+  const contentsParts: any[] = [{ text: prompt }];
+
+  if (pageImages && pageImages.length > 0) {
+    for (const page of pageImages) {
+      const pageBase64 = page.dataUrl.includes(',') ? page.dataUrl.split(',')[1] : page.dataUrl;
+      let pageMime = 'image/jpeg';
+      if (page.dataUrl.startsWith('data:')) {
+        pageMime = page.dataUrl.split(';')[0].replace('data:', '');
+      }
+      contentsParts.push({ text: `\n[--- IMAGEM DA PÁGINA / LÂMINA ${page.pageNumber} ---]` });
+      contentsParts.push({
+        inline_data: {
+          mime_type: pageMime,
+          data: pageBase64,
+        },
+      });
+    }
+  } else {
+    const rawBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+    let mimeType = 'image/jpeg';
+    if (imageBase64.startsWith('data:')) {
+      mimeType = imageBase64.split(';')[0].replace('data:', '');
+    }
+    contentsParts.push({
+      inline_data: {
+        mime_type: mimeType,
+        data: rawBase64,
+      },
+    });
   }
 
   const candidateModels = [
@@ -181,15 +230,7 @@ export async function auditWithGemini(
         body: JSON.stringify({
           contents: [
             {
-              parts: [
-                { text: prompt },
-                {
-                  inline_data: {
-                    mime_type: mimeType,
-                    data: rawBase64,
-                  },
-                },
-              ],
+              parts: contentsParts,
             },
           ],
           generationConfig: {

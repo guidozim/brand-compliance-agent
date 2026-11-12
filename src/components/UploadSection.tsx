@@ -59,59 +59,100 @@ export function UploadSection({
     }
   };
 
-  const processFile = async (file: File) => {
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
-    if (!validTypes.includes(file.type) && !isPdf) {
-      alert('Por favor, envie um arquivo de imagem (.png, .jpg) ou documento (.pdf).');
-      return;
-    }
+  const processFiles = async (fileList: FileList | File[]) => {
+    const files = Array.from(fileList);
+    if (files.length === 0) return;
 
-    if (isPdf) {
-      setIsProcessingPdf(true);
-      try {
-        const pages = await extractPagesFromPdf(file);
-        setExtractedPages(pages);
-        const coverImage = pages[0]?.dataUrl || '';
+    if (files.length === 1) {
+      const file = files[0];
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+      if (!validTypes.includes(file.type) && !isPdf) {
+        alert('Por favor, envie um arquivo de imagem (.png, .jpg) ou documento (.pdf).');
+        return;
+      }
 
-        setSelectedFile({
-          file,
-          preview: coverImage,
-          name: file.name,
-          type: 'application/pdf',
-          size: file.size,
-        });
-      } catch (err) {
-        console.error('Falha ao renderizar PDF:', err);
-        // Fallback básico
-        const reader = new FileReader();
-        reader.onload = (e) => {
+      if (isPdf) {
+        setIsProcessingPdf(true);
+        try {
+          const pages = await extractPagesFromPdf(file);
+          setExtractedPages(pages);
+          const coverImage = pages[0]?.dataUrl || '';
+
           setSelectedFile({
             file,
-            preview: e.target?.result as string,
+            preview: coverImage,
+            name: file.name,
+            type: 'application/pdf',
+            size: file.size,
+          });
+        } catch (err) {
+          console.error('Falha ao renderizar PDF:', err);
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            setSelectedFile({
+              file,
+              preview: e.target?.result as string,
+              name: file.name,
+              type: file.type,
+              size: file.size,
+            });
+          };
+          reader.readAsDataURL(file);
+        } finally {
+          setIsProcessingPdf(false);
+        }
+      } else {
+        setExtractedPages([]);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64 = e.target?.result as string;
+          setSelectedFile({
+            file,
+            preview: base64,
             name: file.name,
             type: file.type,
             size: file.size,
           });
         };
         reader.readAsDataURL(file);
+      }
+    } else {
+      // Múltiplos arquivos (ex: 4 lâminas/imagens selecionadas de uma vez)
+      setIsProcessingPdf(true);
+      try {
+        const pagesPromises = files.map((file, idx) => {
+          return new Promise<ExtractedPdfPage>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const dataUrl = (e.target?.result as string) || '';
+              resolve({
+                pageNumber: idx + 1,
+                dataUrl,
+                width: 1200,
+                height: 627,
+              });
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+
+        const pages = await Promise.all(pagesPromises);
+        setExtractedPages(pages);
+
+        const totalSize = files.reduce((acc, f) => acc + f.size, 0);
+        setSelectedFile({
+          file: files[0],
+          preview: pages[0]?.dataUrl || '',
+          name: `Carrossel / Conjunto de ${files.length} Lâminas`,
+          type: 'image/png',
+          size: totalSize,
+        });
+      } catch (err) {
+        console.error('Erro ao ler múltiplos arquivos:', err);
       } finally {
         setIsProcessingPdf(false);
       }
-    } else {
-      setExtractedPages([]);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64 = e.target?.result as string;
-        setSelectedFile({
-          file,
-          preview: base64,
-          name: file.name,
-          type: file.type,
-          size: file.size,
-        });
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -119,14 +160,14 @@ export function UploadSection({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files);
     }
   };
 
@@ -294,6 +335,7 @@ export function UploadSection({
             <input
               ref={inputRef}
               type="file"
+              multiple
               accept=".png,.jpg,.jpeg,.pdf"
               onChange={handleChange}
               className="hidden"

@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     // Tentativa 1: OpenAI se solicitado ou se houver chave
     if ((provider === 'openai' || (provider === 'auto' && openAiKey)) && openAiKey) {
       try {
-        const rawReport = await auditWithOpenAI(image, brand, contextNote, openAiKey);
+        const rawReport = await auditWithOpenAI(image, brand, contextNote, openAiKey, pageImages);
         report = {
           ...rawReport,
           id: rawReport.id || generateId(),
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     // Tentativa 2: Gemini
     else if ((provider === 'gemini' || (provider === 'auto' && geminiKey)) && geminiKey) {
       try {
-        const rawReport = await auditWithGemini(image, brand, contextNote, geminiKey);
+        const rawReport = await auditWithGemini(image, brand, contextNote, geminiKey, pageImages);
         
         // Constrói pagePreviews a partir das páginas reais extraídas do PDF, se disponíveis
         const pagePreviews = pageImages && pageImages.length > 0
