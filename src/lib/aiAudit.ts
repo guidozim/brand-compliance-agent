@@ -326,17 +326,17 @@ export function generateSmartAuditReport(
           id: generateId(),
           category: 'TYPOGRAPHY',
           categoryLabel: 'Tipografia Homologada',
-          title: 'Tipografia de Título Divergente da Família Aptos / Helvetica',
+          title: 'Uso de Fonte Não Autorizada (Apenas Gilroy é Homologada)',
           severity: 'WARNING',
           pageNumber: 1,
-          locationLabel: 'Página 1 (Capa) • Título Principal',
+          locationLabel: 'Página 1 (Capa) • Título e Subtítulos',
           boundingBox: { x: 8, y: 22, width: 84, height: 42 },
           identified:
-            "O título 'O QUE VOCÊ VAI ENCONTRAR NO LINKEDIN DA ANDRITZ BRASIL?' utiliza uma tipografia arredondada/geométrica não homologada no Brand Guide.",
+            "Foi detectado o uso de fonte genérica sem serifa ou condensada divergente da família oficial da marca.",
           rule:
-            "A tipografia primária oficial da ANDRITZ é Aptos / Helvetica Neue / Arial, mantendo corte industrial sóbrio e legibilidade imediata.",
+            "A ANDRITZ aceita EXCLUSIVAMENTE a família tipográfica Gilroy (Gilroy Regular, Gilroy Semi-bold e Gilroy ExtraBold). Fontes como Aptos, Arial ou Helvetica não são permitidas.",
           suggestion:
-            "Substitua a família tipográfica por Aptos Bold ou Helvetica Neue Bold com entrelinha equilibrada.",
+            "Substitua a família tipográfica por Gilroy ExtraBold para títulos e Gilroy Regular para corpo de texto.",
         },
         {
           id: generateId(),
@@ -442,17 +442,17 @@ export function generateSmartAuditReport(
           id: generateId(),
           category: 'TYPOGRAPHY',
           categoryLabel: 'Hierarquia Tipográfica',
-          title: 'Tipografia de Subtítulo Divergente da Família Homologada',
+          title: 'Tipografia de Subtítulo Divergente da Família Gilroy',
           severity: 'WARNING',
           pageNumber: 2,
           locationLabel: 'Página 2 (Miolo) • Cabeçalho da Seção Técnica',
           boundingBox: { x: 6, y: 14, width: 68, height: 15 },
           identified:
-            "Foi detectada uma fonte condensada com serifa/display nos subtítulos da página interna, divergente da família oficial.",
+            "Foi detectada uma fonte divergente nos subtítulos da página interna.",
           rule:
-            "A tipografia primária oficial é Aptos / Helvetica Neue / Arial, sempre em estilo sóbrio sem serifas.",
+            "A ANDRITZ exige EXCLUSIVAMENTE a família Gilroy (Gilroy Regular, Gilroy Semi-bold, Gilroy ExtraBold).",
           suggestion:
-            "Substitua os títulos pela fonte Aptos Display Bold ou Helvetica Neue Bold.",
+            "Substitua os títulos e subtítulos pela fonte Gilroy Semi-bold ou Gilroy ExtraBold.",
         },
         {
           id: generateId(),
@@ -649,7 +649,7 @@ export function generateSmartAuditReport(
     deviations,
     detectedColors,
     detectedTypography: isAndritz
-      ? ['Aptos Bold (Títulos)', 'Condensada/Display (Não-Oficial)', 'Arial Regular']
+      ? ['Gilroy ExtraBold (Títulos)', 'Gilroy Semi-bold', 'Gilroy Regular']
       : ['Inter SemiBold', 'Inter Regular'],
     contextNote,
     isSimulation: true,
