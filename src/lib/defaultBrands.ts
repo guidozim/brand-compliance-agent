@@ -51,6 +51,13 @@ export const ANDRITZ_BRAND_GUIDE: BrandGuide = {
       usage: 'Cards técnicos, tabelas comparativas e planos de fundo secundários.',
       type: 'neutral',
     },
+    {
+      id: 'c7',
+      name: 'Safety Yellow (Apenas Avisos & EHS de Segurança)',
+      hex: '#FDD000',
+      usage: 'Restrito exclusivamente a pictogramas de alerta de segurança (EHS / ISO 7010), sinalização industrial e indicadores de risco técnicos. Proibido uso como cor decorativa ou fundo de layout.',
+      type: 'secondary',
+    },
   ],
   typography: {
     primaryFont: 'Gilroy (Gilroy Regular, Gilroy Semi-bold, Gilroy ExtraBold)',
