@@ -51,9 +51,11 @@ ${contextNote ? `\nCONTEXTO ESPECÍFICO DESTA PEÇA FORNECIDO PELO OPERADOR: "${
 ---
 ### SUAS INSTRUÇÕES DE ANÁLISE:
 1. Examine meticulosamente todas as páginas enviadas:
-   a) Uso do Logotipo: Está distorcido? Respeita a área de respiro mínima (clear space)? O fundo tem contraste suficiente? A cor do logo é oficial?
+   a) Uso do Logotipo & Signet:
+      - Respeita a área de respiro mínima (clear space)? O fundo tem contraste suficiente?
+      - 🚨 REGRA OFICIAL DO SIGNET (SÍMBOLO 'A'): O uso do SIGNET ISOLADO (símbolo 'A' da ANDRITZ) no topo de capas de apresentações (slide decks), brochuras digitais, materiais gráficos e posts de redes sociais é 100% HOMOLOGADO, OFICIAL E PERMITIDO pelo Brand Portal da ANDRITZ. JAMAIS marque como erro, ressalva ou alerta o uso do Signet isolado. Se o Signet estiver presente com área de respiro adequada, avalie como PASS (Conforme / Aprovado).
    b) Tipografia, Espaçamento & Hierarquia:
-      - A família tipográfica bate com a oficial (${brand.typography.primaryFont})?
+      - A família tipográfica aceita EXCLUSIVAMENTE é Gilroy (Gilroy Regular, Gilroy Semi-bold, Gilroy ExtraBold). Fontes como Aptos, Arial, Helvetica ou Segoe UI DEVEM ser reprovadas.
       - Espaçamento entre-letras (kerning/tracking) e entre-linhas (leading): Verifique se o entre-linhas está equilibrado (sem sobreposição e sem linhas muito distantes) e se o rastreamento entre-letras está natural.
       - 🚨 REGRA CRÍTICA DE CORES DE TÍTULOS: Títulos em BRANCO (#FFFFFF) aplicados sobre fundos escuros (fundo ANDRITZ Blue #005A9C, Deep Navy #002B49 ou fotografias industriais de capa) são 100% CORRETOS, HOMOLOGADOS e PERMITIDOS. JAMAIS marque como erro ou ressalva o uso de texto branco sobre fundo escuro/azul se houver bom contraste.
    c) Paleta de Cores: Os tons predominantes batem com os códigos HEX oficiais? Há cores estranhas ou vibrantes fora da identidade industrial?
@@ -310,17 +312,17 @@ export function generateSmartAuditReport(
           id: generateId(),
           category: 'LOGO',
           categoryLabel: 'Uso do Logo & Clear Space',
-          title: 'Logotipo Oficial com Clear Space Regulamentar Ausente na Capa',
-          severity: 'CRITICAL',
+          title: 'Uso do Signet Isolado (Símbolo A) em Conforme',
+          severity: 'PASS',
           pageNumber: 1,
-          locationLabel: 'Página 1 (Capa) • Enquadramento da Peça',
-          boundingBox: { x: 50, y: 12, width: 30, height: 20 },
+          locationLabel: 'Página 1 (Capa) • Canto Superior Central',
+          boundingBox: { x: 45, y: 5, width: 10, height: 12 },
           identified:
-            "O logotipo ANDRITZ aparece apenas de forma secundária dentro da imagem do notebook, sem aplicação do logotipo primário da marca com área de respiro regulamentar protegida na capa do post.",
+            "O símbolo 'A' (Signet) da ANDRITZ é utilizado no topo da peça com área de respiro adequada e excelente contraste.",
           rule:
-            "Toda peça visual externa para canais digitais ou redes corporativas deve conter o logotipo ANDRITZ com recuo mínimo igual à altura da letra 'A' em relação às bordas.",
+            "O Brand Guide do portal ANDRITZ homologa e permite 100% o uso do Signet isolado em capas de apresentações (slide decks), brochuras digitais, redes sociais e peças corporativas.",
           suggestion:
-            "Insira o logotipo ANDRITZ oficial com fundo de contraste ou área de respiro preservada em um dos cantos da capa.",
+            "Manter a aplicação conforme homologada no Brand Portal.",
         },
         {
           id: generateId(),
@@ -410,17 +412,17 @@ export function generateSmartAuditReport(
           id: generateId(),
           category: 'LOGO',
           categoryLabel: 'Uso do Logo & Clear Space',
-          title: 'Área de Respiro (Clear Space) do Logotipo Comprometida na Capa',
-          severity: 'CRITICAL',
+          title: 'Aplicação do Signet / Logotipo na Capa',
+          severity: 'PASS',
           pageNumber: 1,
-          locationLabel: 'Página 1 (Capa) • Canto Superior Direito',
-          boundingBox: { x: 68, y: 3, width: 29, height: 16 },
+          locationLabel: 'Página 1 (Capa) • Canto Superior / Central',
+          boundingBox: { x: 45, y: 3, width: 15, height: 16 },
           identified:
-            "O logotipo ANDRITZ na capa da brochura foi posicionado a apenas 8px da margem de corte e elementos visuais de fundo invadem a zona de exclusão.",
+            "Aplicação do símbolo oficial ANDRITZ no topo com margens de respiro preservadas e contraste adequado.",
           rule:
-            "A área de proteção mínima em torno do logotipo ANDRITZ corresponde à altura da letra 'A' do logotipo em todos os lados.",
+            "O Brand Portal da ANDRITZ homologa o uso do Signet isolado ou logotipo nominal em capas de documentos, apresentações e brochuras.",
           suggestion:
-            "Aumente o recuo do logotipo em relação às margens em pelo menos 24px no InDesign.",
+            "Manter a aplicação atual.",
         },
         {
           id: generateId(),

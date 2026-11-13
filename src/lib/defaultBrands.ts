@@ -76,7 +76,7 @@ export const ANDRITZ_BRAND_GUIDE: BrandGuide = {
     allowedVariations: [
       'Versão Positiva: ANDRITZ Blue sobre fundo branco/claro',
       'Versão Negativa: Branco puro sobre fundo ANDRITZ Blue ou fotos industriais escuras de alto contraste',
-      'Signet Isolado (Símbolo do "A"): Homologado para posts de Redes Sociais / LinkedIn, ícones e aplicações digitais compactas, posicionado conforme templates oficiais do Brand Portal.',
+      'Signet Isolado (Símbolo do "A"): Totalmente HOMOLOGADO, OFICIAL e PERMITIDO para capas de apresentações (slide decks), brochuras digitais, posts de Redes Sociais / LinkedIn, ícones e aplicações corporativas, sem necessidade do logotipo nominal completo, desde que respeitada a área de respiro.',
       'Versão Monocromática preta: Apenas para impressões técnicas PB'
     ],
     forbiddenPractices: [
@@ -110,7 +110,7 @@ export const ANDRITZ_BRAND_GUIDE: BrandGuide = {
     ],
   },
   customRulesText: `DIRETRIZES COMPLEMENTARES ANDRITZ:
-- Em peças de Social Media / LinkedIn (posts e carrosséis): É permitida e oficial a aplicação isolada do SIGNET (símbolo 'A' da ANDRITZ) no topo/centro, sem necessidade do logotipo nominal completo, desde que respeitado o alinhamento do template oficial do Brand Portal.
+- Uso do SIGNET (Símbolo do 'A'): É totalmente oficial e homologado a aplicação isolada do Signet no topo de capas de apresentações (slide decks), materiais digitais e posts de Redes Sociais / LinkedIn, sem obrigatoriedade do logotipo nominal escrito.
 - Layouts devem priorizar clareza geométrica, fotografias de engenharia real (usinas, maquinário industrial de grande porte, técnicos com EPI correto).
 - As margens da peça devem ser limpas e respiradas, evitando poluição visual.
 - Gráficos e tabelas devem seguir rigorosamente a paleta oficial (Blue #005A9C e Cyan #00A3E0).
